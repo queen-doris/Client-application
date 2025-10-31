@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { UserService } from '../services/userService';
 import { TransactionService } from '../services/transactionService';
 import { asyncHandler, createError } from '../middlewares/error';
-import { TransactionResponseDto, BalanceResponseDto, CreateTransactionDto, UpdateDeviceDto } from '../dtos/transaction.dto';
+import { TransactionResponseDto, BalanceResponseDto, CreateTransactionDto } from '../dtos/transaction.dto';
+import { UpdateDeviceDto } from '../dtos/customer.dto';
 import { SessionService } from '../services/sessionService';
 
 export class ClientController {

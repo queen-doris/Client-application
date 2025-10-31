@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { DollarSign, AlertTriangle, Plus, Minus, History, User, LogOut, TrendingUp, TrendingDown, X } from 'lucide-react';
+import { DollarSign, AlertTriangle, Plus, Minus, History, User, LogOut, TrendingUp, TrendingDown, X, Eye, FileText, Calendar as CalendarIcon, ArrowUpDown, CheckCircle, XCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
@@ -84,6 +84,8 @@ export default function ClientDashboard() {
   const [description, setDescription] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -170,6 +172,24 @@ export default function ClientDashboard() {
       addToast(errorMessage, 'error');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const viewTransactionDetails = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setTransactionDialogOpen(true);
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'failed':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'pending':
+        return <Clock className="h-4 w-4 text-yellow-500" />;
+      default:
+        return null;
     }
   };
 
@@ -446,12 +466,13 @@ export default function ClientDashboard() {
                     <TableHead>Status</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-gray-500">
+                      <TableCell colSpan={6} className="text-center text-gray-500">
                         No transactions found
                       </TableCell>
                     </TableRow>
@@ -459,7 +480,7 @@ export default function ClientDashboard() {
                     [...filteredTransactions]
                       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((transaction) => (
-                        <TableRow key={transaction.id}>
+                        <TableRow key={transaction.id} className="hover:bg-gray-50">
                           <TableCell>
                             <Badge variant={transaction.type === 'deposit' ? "default" : "secondary"}>
                               {transaction.type}
@@ -480,6 +501,17 @@ export default function ClientDashboard() {
                           </TableCell>
                           <TableCell>{transaction.description || '-'}</TableCell>
                           <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => viewTransactionDetails(transaction)}
+                              className="flex items-center gap-1"
+                            >
+                              <Eye className="h-3 w-3" />
+                              View
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       ))
                   )}
@@ -489,6 +521,132 @@ export default function ClientDashboard() {
           </Card>
         </div>
       </div>
+
+      {/* Transaction Details Dialog */}
+      <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Transaction Details
+            </DialogTitle>
+            <DialogDescription>
+              Complete information about your transaction
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="space-y-4">
+              {/* Transaction Type & Status */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`p-2 rounded-full ${
+                    selectedTransaction.type === 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                  }`}>
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium capitalize">{selectedTransaction.type}</p>
+                    <Badge 
+                      variant={
+                        selectedTransaction.status === 'completed' ? 'default' : 
+                        selectedTransaction.status === 'failed' ? 'destructive' : 'secondary'
+                      }
+                      className="mt-1"
+                    >
+                      {selectedTransaction.status}
+                    </Badge>
+                  </div>
+                </div>
+                <p
+                  className={`text-2xl font-bold ${
+                    selectedTransaction.type === 'deposit' ? 'text-green-600' : 'text-red-600'
+                  }`}
+                >
+                  {selectedTransaction.type === 'deposit' ? '+' : '-'}${selectedTransaction.amount.toFixed(2)}
+                </p>
+              </div>
+
+              {/* Transaction Details Grid */}
+              <div className="grid gap-3">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium">Amount</span>
+                  </div>
+                  <span className="font-medium">${selectedTransaction.amount.toFixed(2)}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium">Date & Time</span>
+                  </div>
+                  <span className="font-medium text-right">
+                    {new Date(selectedTransaction.createdAt).toLocaleDateString()}<br />
+                    <span className="text-xs text-gray-500">
+                      {new Date(selectedTransaction.createdAt).toLocaleTimeString()}
+                    </span>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium">Transaction ID</span>
+                  </div>
+                  <span className="font-mono text-xs">{selectedTransaction.id}</span>
+                </div>
+
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium">Description</span>
+                  </div>
+                  <p className="text-sm">
+                    {selectedTransaction.description || 'No description provided'}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(selectedTransaction.status)}
+                    <span className="text-sm font-medium">Status</span>
+                  </div>
+                  <span className="font-medium capitalize">{selectedTransaction.status}</span>
+                </div>
+              </div>
+
+              {/* Status Message */}
+              {selectedTransaction.status === 'completed' && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-800">Transaction Completed Successfully</span>
+                  </div>
+                </div>
+              )}
+
+              {selectedTransaction.status === 'failed' && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-red-600" />
+                    <span className="text-sm font-medium text-red-800">Transaction Failed</span>
+                  </div>
+                </div>
+              )}
+
+              {selectedTransaction.status === 'pending' && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-yellow-600" />
+                    <span className="text-sm font-medium text-yellow-800">Transaction Processing</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
