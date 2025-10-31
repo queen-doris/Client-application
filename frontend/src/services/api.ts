@@ -70,6 +70,13 @@ class ApiService {
     });
   }
 
+  // In your api.ts file, add this method to the ApiService class
+async deleteClientAccount(): Promise<void> {
+  return this.request<void>('/api/client/account', {
+    method: 'DELETE',
+  });
+}
+
   async withdraw(amount: number, description?: string): Promise<Transaction> {
     return this.request<Transaction>('/api/client/withdraw', {
       method: 'POST',

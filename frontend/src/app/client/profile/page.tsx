@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/store/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,11 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { apiService } from '@/services/api';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react'; // Import the back arrow icon
+import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner'; // or your preferred toast library
 
 export default function ClientProfilePage() {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -20,6 +22,65 @@ export default function ClientProfilePage() {
       router.push('/client/login');
     }
   }, [loading, isAuthenticated, user, router]);
+
+  const handleDeleteAccount = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      // Use the API service method instead of direct fetch
+      await apiService.deleteClientAccount();
+      
+      // Show success message
+      toast.success('Account deleted successfully');
+      
+      // Logout and redirect
+      await logout();
+      router.push('/');
+      
+    } catch (error: any) {
+      console.error('Failed to delete account:', error);
+      toast.error(error.message || 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleForceDelete = async () => {
+    try {
+      // Fallback: Direct fetch with proper error handling
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/client/account`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('sessionId') ? { 
+              'X-Session-ID': localStorage.getItem('sessionId') as string 
+            } : {}),
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      toast.success('Account deleted successfully');
+      
+      // Clear local storage and redirect
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('sessionId');
+      window.location.href = '/';
+      
+    } catch (error: any) {
+      console.error('Failed to delete account:', error);
+      toast.error(error.message || 'Failed to delete account. Please try again.');
+    }
+  };
 
   if (!user) return null;
 
@@ -58,37 +119,26 @@ export default function ClientProfilePage() {
             <div className="pt-4">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">Delete Account</Button>
+                  <Button variant="destructive" disabled={isDeleting}>
+                    {isDeleting ? 'Deleting...' : 'Delete Account'}
+                  </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                    <AlertDialogTitle>Are you sure you want to delete your account?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action will permanently delete your account and all transactions. This cannot be undone.
+                      This action cannot be undone. This will permanently delete your account 
+                      and remove all your data from our servers.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={async () => {
-                        try {
-                          await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api/client/account', {
-                            method: 'DELETE',
-                            headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-                              ...(localStorage.getItem('sessionId') ? { 'X-Session-ID': localStorage.getItem('sessionId') as string } : {}),
-                            },
-                          });
-                        } finally {
-                          // Force logout locally regardless of API response
-                          localStorage.removeItem('token');
-                          localStorage.removeItem('user');
-                          localStorage.removeItem('sessionId');
-                          window.location.href = '/';
-                        }
-                      }}
+                      onClick={handleDeleteAccount}
+                      disabled={isDeleting}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      Yes, delete
+                      {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
