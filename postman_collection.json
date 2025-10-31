@@ -1,0 +1,264 @@
+{
+  "info": {
+    "name": "Savings Management System API",
+    "description": "Complete API collection for the Savings Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Client",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\",\n  \"confirmPassword\": \"Password123\",\n  \"deviceId\": \"device-12345\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"]}
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"]}
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["api", "auth", "forgot-password"]}
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"token\": \"123456\",\n  \"newPassword\": \"NewPassword123\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["api", "auth", "reset-password"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/admin/customers", "host": ["{{baseUrl}}"], "path": ["api", "admin", "customers"]}
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/admin/customers/:id", "host": ["{{baseUrl}}"], "path": ["api", "admin", "customers", ":id"]}
+          }
+        },
+        {
+          "name": "Verify Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/admin/customers/:id/verify", "host": ["{{baseUrl}}"], "path": ["api", "admin", "customers", ":id", "verify"]}
+          }
+        },
+        {
+          "name": "Reject Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Invalid documentation\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/admin/customers/:id/reject", "host": ["{{baseUrl}}"], "path": ["api", "admin", "customers", ":id", "reject"]}
+          }
+        },
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/admin/transactions", "host": ["{{baseUrl}}"], "path": ["api", "admin", "transactions"]}
+          }
+        },
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/admin/dashboard/stats", "host": ["{{baseUrl}}"], "path": ["api", "admin", "dashboard", "stats"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client",
+      "item": [
+        {
+          "name": "Get Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/client/balance", "host": ["{{baseUrl}}"], "path": ["api", "client", "balance"]}
+          }
+        },
+        {
+          "name": "Get Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/client/transactions", "host": ["{{baseUrl}}"], "path": ["api", "client", "transactions"]}
+          }
+        },
+        {
+          "name": "Deposit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"description\": \"Initial deposit\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/client/deposit", "host": ["{{baseUrl}}"], "path": ["api", "client", "deposit"]}
+          }
+        },
+        {
+          "name": "Withdraw",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 200,\n  \"description\": \"ATM withdrawal\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/client/withdraw", "host": ["{{baseUrl}}"], "path": ["api", "client", "withdraw"]}
+          }
+        },
+        {
+          "name": "Update Device ID",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"new-device-789\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/client/device", "host": ["{{baseUrl}}"], "path": ["api", "client", "device"]}
+          }
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "X-Session-ID", "value": "{{sessionId}}"}
+            ],
+            "url": {"raw": "{{baseUrl}}/api/client/account", "host": ["{{baseUrl}}"], "path": ["api", "client", "account"]}
+          }
+        }
+      ]
+    }
+  ]
+}
+
